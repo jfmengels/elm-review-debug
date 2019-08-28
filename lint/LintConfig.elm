@@ -11,9 +11,13 @@ To add packages that contain rules, add them to this lint project using
 
 import Lint.Rule exposing (Rule)
 import NoDebug
+import NoUnused.CustomTypeConstructors
+import NoUnused.Variables
 
 
 config : List Rule
 config =
     [ NoDebug.rule
+    , NoUnused.Variables.rule
+    , NoUnused.CustomTypeConstructors.rule
     ]
