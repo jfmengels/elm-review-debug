@@ -1,7 +1,7 @@
 {
   "name": "lint-debug",
   "version": "1.0.0",
-  "description": "Reporter for elm-init",
+  "description": "Provides elm-lint rules to detect debug code",
   "main": "index.js",
   "scripts": {
     "test": "elm make && elm-format src/ --validate && elm-test && elm-lint src/ lint/ && elm-xref"

@@ -1,7 +1,6 @@
 # lint-debug
 
-[`elm-lint`](https://package.elm-lang.org/packages/jfmengels/elm-lint/latest)
-plugin that provides rules to detect debug code.
+Provides [`elm-lint`](https://package.elm-lang.org/packages/jfmengels/elm-lint/latest) rules to detect debug code.
 
 
 ## Provided rules
