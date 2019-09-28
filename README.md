@@ -1,6 +1,6 @@
-# lint-debug
+# review-debug
 
-Provides [`elm-lint`](https://package.elm-lang.org/packages/jfmengels/elm-lint/latest/) rules to detect debug code.
+Provides [`elm-review`](https://package.elm-lang.org/packages/jfmengels/elm-review/latest/) rules to detect debug code.
 
 
 ## Provided rules
@@ -11,9 +11,9 @@ Provides [`elm-lint`](https://package.elm-lang.org/packages/jfmengels/elm-lint/l
 ## Configuration
 
 ```elm
-module LintConfig exposing (config)
+module ReviewConfig exposing (config)
 
-import Lint.Rule exposing (Rule)
+import Review.Rule exposing (Rule)
 import NoDebug
 
 config : List Rule
