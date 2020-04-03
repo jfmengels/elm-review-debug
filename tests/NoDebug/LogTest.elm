@@ -1,4 +1,4 @@
-module NoDebugLogTest exposing (all)
+module NoDebug.LogTest exposing (all)
 
 import NoDebug.Log exposing (rule)
 import Review.Test exposing (ReviewResult)

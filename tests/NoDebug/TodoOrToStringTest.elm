@@ -1,4 +1,4 @@
-module NoDebugTodoOrToStringTest exposing (all)
+module NoDebug.TodoOrToStringTest exposing (all)
 
 import NoDebug.TodoOrToString exposing (rule)
 import Review.Test exposing (ReviewResult)
