@@ -5,7 +5,7 @@ Provides [`elm-review`](https://package.elm-lang.org/packages/jfmengels/elm-revi
 
 ## Provided rules
 
-- [`NoDebug`](./NoDebug) - Reports uses or imports of the [`Debug` module](https://package.elm-lang.org/packages/elm/core/latest/Debug).
+- [`NoDebug.Log`](./NoDebug-Log) - Reports uses of [`Debug.Log`](https://package.elm-lang.org/packages/elm/core/latest/Debug#log).
 
 
 ## Configuration
@@ -13,11 +13,11 @@ Provides [`elm-review`](https://package.elm-lang.org/packages/jfmengels/elm-revi
 ```elm
 module ReviewConfig exposing (config)
 
+import NoDebug.Log
 import Review.Rule exposing (Rule)
-import NoDebug
 
 config : List Rule
 config =
-    [ NoDebug.rule
+    [ NoDebug.Log.rule
     ]
 ```
