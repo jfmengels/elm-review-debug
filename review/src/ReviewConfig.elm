@@ -21,5 +21,5 @@ config : List Rule
 config =
     [ NoDebug.rule
     , NoUnused.Variables.rule
-    , NoUnused.CustomTypeConstructors.rule
+    , NoUnused.CustomTypeConstructors.rule []
     ]
