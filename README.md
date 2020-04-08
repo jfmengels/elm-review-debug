@@ -5,8 +5,8 @@ Provides [`elm-review`](https://package.elm-lang.org/packages/jfmengels/elm-revi
 
 ## Provided rules
 
-- [`NoDebug.Log`](./NoDebug-Log) - Reports uses of [`Debug.Log`](https://package.elm-lang.org/packages/elm/core/latest/Debug#log).
-- [`NoDebug.TodoOrToString`](./NoDebug-TodoOrToString) - Reports uses of [`Debug.todo`](https://package.elm-lang.org/packages/elm/core/latest/Debug#todo) and [`Debug.toString`](https://package.elm-lang.org/packages/elm/core/latest/Debug#toString).
+- [`NoDebug.Log`](./NoDebug-Log) - Reports uses of [`Debug.Log`](https://package.elm-lang.org/packages/elm/core/2.0.0/Debug#log).
+- [`NoDebug.TodoOrToString`](./NoDebug-TodoOrToString) - Reports uses of [`Debug.todo`](https://package.elm-lang.org/packages/elm/core/2.0.0/Debug#todo) and [`Debug.toString`](https://package.elm-lang.org/packages/elm/core/2.0.0/Debug#toString).
 
 
 ## Configuration
