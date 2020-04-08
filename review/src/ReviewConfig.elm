@@ -11,15 +11,19 @@ when inside the directory containing this file.
 
 -}
 
-import NoDebug
-import NoUnused.CustomTypeConstructors
-import NoUnused.Variables
+-- import NoUnused.CustomTypeConstructors
+-- import NoUnused.Variables
+
+import NoDebug.Log
+import NoDebug.TodoOrToString
 import Review.Rule exposing (Rule)
 
 
 config : List Rule
 config =
-    [ NoDebug.rule
-    , NoUnused.Variables.rule
-    , NoUnused.CustomTypeConstructors.rule []
+    [ NoDebug.Log.rule
+    , NoDebug.TodoOrToString.rule
+
+    -- , NoUnused.Variables.rule
+    -- , NoUnused.CustomTypeConstructors.rule []
     ]
