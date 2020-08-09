@@ -63,7 +63,7 @@ elm-review --template jfmengels/review-debug/example --rules NoDebug.Log
 -}
 rule : Rule
 rule =
-    Rule.newModuleRuleSchema "NoDebugLog" { hasLogBeenImported = False }
+    Rule.newModuleRuleSchema "NoDebug.Log" { hasLogBeenImported = False }
         |> Rule.withImportVisitor importVisitor
         |> Rule.withExpressionVisitor expressionVisitor
         |> Rule.fromModuleRuleSchema
