@@ -1,12 +1,12 @@
-# review-debug
+# elm-review-debug
 
 Provides [`elm-review`](https://package.elm-lang.org/packages/jfmengels/elm-review/latest/) rules to detect debug code.
 
 
 ## Provided rules
 
-- [`NoDebug.Log`](https://package.elm-lang.org/packages/jfmengels/review-debug/2.0.1/NoDebug-Log) - Reports uses of [`Debug.Log`](https://package.elm-lang.org/packages/elm/core/latest/Debug#log).
-- [`NoDebug.TodoOrToString`](https://package.elm-lang.org/packages/jfmengels/review-debug/2.0.1/NoDebug-TodoOrToString) - Reports uses of [`Debug.todo`](https://package.elm-lang.org/packages/elm/core/latest/Debug#todo) and [`Debug.toString`](https://package.elm-lang.org/packages/elm/core/latest/Debug#toString).
+- [`NoDebug.Log`](https://package.elm-lang.org/packages/jfmengels/elm-review-debug/1.0.0/NoDebug-Log) - Reports uses of [`Debug.Log`](https://package.elm-lang.org/packages/elm/core/latest/Debug#log).
+- [`NoDebug.TodoOrToString`](https://package.elm-lang.org/packages/jfmengels/elm-review-debug/1.0.0/NoDebug-TodoOrToString) - Reports uses of [`Debug.todo`](https://package.elm-lang.org/packages/elm/core/latest/Debug#todo) and [`Debug.toString`](https://package.elm-lang.org/packages/elm/core/latest/Debug#toString).
 
 
 ## Configuration
@@ -30,5 +30,5 @@ config =
 You can try the example configuration above out by running the following command:
 
 ```bash
-elm-review --template jfmengels/review-debug/example
+elm-review --template jfmengels/elm-review-debug/example
 ```

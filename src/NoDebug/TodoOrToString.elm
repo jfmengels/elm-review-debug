@@ -74,7 +74,7 @@ can configure the rule like this.
 You can try this rule out by running the following command:
 
 ```bash
-elm-review --template jfmengels/review-debug/example --rules NoDebug.TodoOrToString
+elm-review --template jfmengels/elm-review-debug/example --rules NoDebug.TodoOrToString
 ```
 
 [`Debug.log`]: https://package.elm-lang.org/packages/elm/core/latest/Debug#log
