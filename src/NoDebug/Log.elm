@@ -104,103 +104,86 @@ error node rangeToRemove =
         )
 
 
+handleWhenSingleArg : Range -> Context -> Node Expression -> ( List (Error {}), Context )
+handleWhenSingleArg rangeToPotentiallyRemove context node =
+    case Node.value node of
+        Expression.Application (((Node logFunctionRange (Expression.FunctionOrValue _ "log")) as logFunctionNode) :: logArguments) ->
+            case ModuleNameLookupTable.moduleNameAt context.lookupTable logFunctionRange of
+                Just [ "Debug" ] ->
+                    let
+                        rangeToRemove : Maybe Range
+                        rangeToRemove =
+                            case logArguments of
+                                [ _ ] ->
+                                    Just rangeToPotentiallyRemove
+
+                                _ ->
+                                    Nothing
+                    in
+                    ( [ error logFunctionNode rangeToRemove ]
+                    , { context | rangesToIgnore = Node.range node :: logFunctionRange :: context.rangesToIgnore }
+                    )
+
+                _ ->
+                    ( [], context )
+
+        _ ->
+            ( [], context )
+
+
 expressionVisitor : Node Expression -> Context -> ( List (Error {}), Context )
 expressionVisitor node context =
     case Node.value node of
         Expression.OperatorApplication "|>" _ left right ->
-            case Node.value right of
-                Expression.Application (((Node logFunctionRange (Expression.FunctionOrValue _ "log")) as logFunctionNode) :: logArguments) ->
-                    case ModuleNameLookupTable.moduleNameAt context.lookupTable logFunctionRange of
-                        Just [ "Debug" ] ->
-                            let
-                                rangeToRemove : Maybe Range
-                                rangeToRemove =
-                                    case logArguments of
-                                        [ _ ] ->
-                                            Just
-                                                { start = (Node.range left).end
-                                                , end = (Node.range right).end
-                                                }
-
-                                        _ ->
-                                            Nothing
-                            in
-                            ( [ error logFunctionNode rangeToRemove ]
-                            , { context | rangesToIgnore = Node.range right :: logFunctionRange :: context.rangesToIgnore }
-                            )
-
-                        _ ->
-                            ( [], context )
-
-                _ ->
-                    ( [], context )
+            handleWhenSingleArg
+                { start = (Node.range left).end
+                , end = (Node.range right).end
+                }
+                context
+                right
 
         Expression.OperatorApplication "<|" _ left right ->
-            case Node.value left of
-                Expression.Application (((Node logFunctionRange (Expression.FunctionOrValue _ "log")) as logFunctionNode) :: logArguments) ->
-                    case ModuleNameLookupTable.moduleNameAt context.lookupTable logFunctionRange of
-                        Just [ "Debug" ] ->
-                            let
-                                rangeToRemove : Maybe Range
-                                rangeToRemove =
-                                    case logArguments of
-                                        [ _ ] ->
-                                            Just
-                                                { start = (Node.range left).start
-                                                , end = (Node.range right).start
-                                                }
-
-                                        _ ->
-                                            Nothing
-                            in
-                            ( [ error logFunctionNode rangeToRemove ]
-                            , { context | rangesToIgnore = Node.range left :: logFunctionRange :: context.rangesToIgnore }
-                            )
-
-                        _ ->
-                            ( [], context )
-
-                _ ->
-                    ( [], context )
+            handleWhenSingleArg
+                { start = (Node.range left).start
+                , end = (Node.range right).start
+                }
+                context
+                left
 
         Expression.Application (((Node logFunctionRange (Expression.FunctionOrValue _ "log")) as logFunctionNode) :: logArguments) ->
-            if List.member (Node.range node) context.rangesToIgnore then
-                ( [], context )
+            let
+                rangeToRemove : Maybe Range
+                rangeToRemove =
+                    case logArguments of
+                        [ _, valueToLog ] ->
+                            Just
+                                { start = logFunctionRange.start
+                                , end = (Node.range valueToLog).start
+                                }
 
-            else
-                case ModuleNameLookupTable.moduleNameAt context.lookupTable logFunctionRange of
-                    Just [ "Debug" ] ->
-                        let
-                            rangeToRemove : Maybe Range
-                            rangeToRemove =
-                                case logArguments of
-                                    [ _, valueToLog ] ->
-                                        Just
-                                            { start = logFunctionRange.start
-                                            , end = (Node.range valueToLog).start
-                                            }
-
-                                    _ ->
-                                        Nothing
-                        in
-                        ( [ error logFunctionNode rangeToRemove ]
-                        , { context | rangesToIgnore = logFunctionRange :: context.rangesToIgnore }
-                        )
-
-                    _ ->
-                        ( [], context )
+                        _ ->
+                            Nothing
+            in
+            reportIfDebugLog logFunctionNode context rangeToRemove
 
         Expression.FunctionOrValue _ "log" ->
-            if List.member (Node.range node) context.rangesToIgnore then
-                ( [], context )
-
-            else
-                case ModuleNameLookupTable.moduleNameFor context.lookupTable node of
-                    Just [ "Debug" ] ->
-                        ( [ error node Nothing ], context )
-
-                    _ ->
-                        ( [], context )
+            reportIfDebugLog node context Nothing
 
         _ ->
             ( [], context )
+
+
+reportIfDebugLog : Node Expression -> Context -> Maybe Range -> ( List (Error {}), Context )
+reportIfDebugLog node context rangeToRemove =
+    if List.member (Node.range node) context.rangesToIgnore then
+        ( [], context )
+
+    else
+        case ModuleNameLookupTable.moduleNameFor context.lookupTable node of
+            Just [ "Debug" ] ->
+                ( [ error node rangeToRemove ]
+                , { context | rangesToIgnore = Node.range node :: context.rangesToIgnore }
+                )
+
+            _ ->
+                ( [], context )
