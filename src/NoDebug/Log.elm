@@ -6,10 +6,9 @@ module NoDebug.Log exposing (rule)
 
 -}
 
-import Elm.Syntax.Exposing as Exposing
 import Elm.Syntax.Expression as Expression exposing (Expression)
-import Elm.Syntax.Import exposing (Import)
 import Elm.Syntax.Node as Node exposing (Node)
+import Review.ModuleNameLookupTable as ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
@@ -63,15 +62,19 @@ elm-review --template jfmengels/elm-review-debug/example --rules NoDebug.Log
 -}
 rule : Rule
 rule =
-    Rule.newModuleRuleSchema "NoDebug.Log" { hasLogBeenImported = False }
-        |> Rule.withImportVisitor importVisitor
+    Rule.newModuleRuleSchemaUsingContextCreator "NoDebug.Log" initContext
         |> Rule.withExpressionEnterVisitor expressionVisitor
         |> Rule.fromModuleRuleSchema
 
 
 type alias Context =
-    { hasLogBeenImported : Bool
-    }
+    ModuleNameLookupTable
+
+
+initContext : Rule.ContextCreator () ModuleNameLookupTable
+initContext =
+    Rule.initContextCreator (\lookupTable () -> lookupTable)
+        |> Rule.withModuleNameLookupTable
 
 
 error : Node a -> Error {}
@@ -85,53 +88,16 @@ error node =
         (Node.range node)
 
 
-importVisitor : Node Import -> Context -> ( List nothing, Context )
-importVisitor node context =
-    let
-        moduleName : List String
-        moduleName =
-            node
-                |> Node.value
-                |> .moduleName
-                |> Node.value
-    in
-    if moduleName == [ "Debug" ] then
-        case node |> Node.value |> .exposingList |> Maybe.map Node.value of
-            Just (Exposing.All _) ->
-                ( [], { hasLogBeenImported = True } )
-
-            Just (Exposing.Explicit importedNames) ->
-                ( [], { hasLogBeenImported = List.any isLog importedNames } )
-
-            Nothing ->
-                ( [], context )
-
-    else
-        ( [], context )
-
-
-isLog : Node Exposing.TopLevelExpose -> Bool
-isLog node =
-    case Node.value node of
-        Exposing.FunctionExpose "log" ->
-            True
-
-        _ ->
-            False
-
-
 expressionVisitor : Node Expression -> Context -> ( List (Error {}), Context )
-expressionVisitor node context =
+expressionVisitor node lookupTable =
     case Node.value node of
-        Expression.FunctionOrValue [ "Debug" ] "log" ->
-            ( [ error node ], context )
+        Expression.FunctionOrValue _ "log" ->
+            case ModuleNameLookupTable.moduleNameFor lookupTable node of
+                Just [ "Debug" ] ->
+                    ( [ error node ], lookupTable )
 
-        Expression.FunctionOrValue [] "log" ->
-            if context.hasLogBeenImported then
-                ( [ error node ], context )
-
-            else
-                ( [], context )
+                _ ->
+                    ( [], lookupTable )
 
         _ ->
-            ( [], context )
+            ( [], lookupTable )
