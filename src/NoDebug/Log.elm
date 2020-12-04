@@ -7,7 +7,9 @@ module NoDebug.Log exposing (rule)
 -}
 
 import Elm.Syntax.Expression as Expression exposing (Expression)
-import Elm.Syntax.Node as Node exposing (Node)
+import Elm.Syntax.Node as Node exposing (Node(..))
+import Elm.Syntax.Range exposing (Range)
+import Review.Fix
 import Review.ModuleNameLookupTable as ModuleNameLookupTable exposing (ModuleNameLookupTable)
 import Review.Rule as Rule exposing (Error, Rule)
 
@@ -68,36 +70,77 @@ rule =
 
 
 type alias Context =
-    ModuleNameLookupTable
+    { lookupTable : ModuleNameLookupTable
+    , rangesToIgnore : List Range
+    }
 
 
-initContext : Rule.ContextCreator () ModuleNameLookupTable
+initContext : Rule.ContextCreator () Context
 initContext =
-    Rule.initContextCreator (\lookupTable () -> lookupTable)
+    Rule.initContextCreator
+        (\lookupTable () ->
+            { lookupTable = lookupTable
+            , rangesToIgnore = []
+            }
+        )
         |> Rule.withModuleNameLookupTable
 
 
-error : Node a -> Error {}
-error node =
-    Rule.error
+error : Node a -> Maybe Range -> Error {}
+error node rangeToRemove =
+    Rule.errorWithFix
         { message = "Remove the use of `Debug.log` before shipping to production"
         , details =
             [ "`Debug.log` is useful when developing, but is not meant to be shipped to production or published in a package. I suggest removing its use before committing and attempting to push to production."
             ]
         }
         (Node.range node)
+        (case rangeToRemove of
+            Just range ->
+                [ Review.Fix.removeRange range ]
+
+            Nothing ->
+                []
+        )
 
 
 expressionVisitor : Node Expression -> Context -> ( List (Error {}), Context )
-expressionVisitor node lookupTable =
+expressionVisitor node context =
     case Node.value node of
-        Expression.FunctionOrValue _ "log" ->
-            case ModuleNameLookupTable.moduleNameFor lookupTable node of
+        Expression.Application (((Node logFunctionRange (Expression.FunctionOrValue _ "log")) as logFunctionNode) :: logArguments) ->
+            case ModuleNameLookupTable.moduleNameAt context.lookupTable logFunctionRange of
                 Just [ "Debug" ] ->
-                    ( [ error node ], lookupTable )
+                    let
+                        rangeToRemove : Maybe Range
+                        rangeToRemove =
+                            case logArguments of
+                                [ _, valueToLog ] ->
+                                    Just
+                                        { start = logFunctionRange.start
+                                        , end = (Node.range valueToLog).start
+                                        }
+
+                                _ ->
+                                    Nothing
+                    in
+                    ( [ error logFunctionNode rangeToRemove ]
+                    , { context | rangesToIgnore = logFunctionRange :: context.rangesToIgnore }
+                    )
 
                 _ ->
-                    ( [], lookupTable )
+                    ( [], context )
+
+        Expression.FunctionOrValue _ "log" ->
+            if List.member (Node.range node) context.rangesToIgnore then
+                ( [], context )
+
+            else
+                case ModuleNameLookupTable.moduleNameFor context.lookupTable node of
+                    Just [ "Debug" ] ->
+                        ( [ error node Nothing ], context )
+
+                    _ ->
+                        ( [], context )
 
         _ ->
-            ( [], lookupTable )
+            ( [], context )

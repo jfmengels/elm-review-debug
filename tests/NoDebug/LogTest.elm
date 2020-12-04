@@ -19,6 +19,11 @@ project =
     Project.addDependency Dependencies.ElmCore.dependency Project.new
 
 
+whenFixed : String -> Review.Test.ExpectedError -> Review.Test.ExpectedError
+whenFixed string =
+    Review.Test.whenFixed ("module A exposing (..)\n\n" ++ string)
+
+
 message : String
 message =
     "Remove the use of `Debug.log` before shipping to production"
@@ -129,8 +134,9 @@ b = Debug.log z
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed "a = [ y ]"
                         ]
-        , test "should report Debug.log in an record expression" <|
+        , test "should report Debug.log in a record expression" <|
             \() ->
                 testRule "a = { foo = Debug.log z y }"
                     |> Review.Test.expectErrors
@@ -139,8 +145,9 @@ b = Debug.log z
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed "a = { foo = y }"
                         ]
-        , test "should report Debug.log in an record update expression" <|
+        , test "should report Debug.log in a record update expression" <|
             \() ->
                 testRule "a = { model | foo = Debug.log z y }"
                     |> Review.Test.expectErrors
@@ -149,6 +156,7 @@ b = Debug.log z
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed "a = { model | foo = y }"
                         ]
         , test "should report Debug.log in an lambda expression" <|
             \() ->
@@ -159,6 +167,7 @@ b = Debug.log z
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed "a = (\\foo -> foo)"
                         ]
         , test "should report Debug.log in an if expression condition" <|
             \() ->
@@ -169,6 +178,7 @@ b = Debug.log z
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed "a = if b then True else False"
                         ]
         , test "should report Debug.log in an if expression then branch" <|
             \() ->
@@ -179,6 +189,7 @@ b = Debug.log z
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed "a = if True then b else False"
                         ]
         , test "should report Debug.log in an if expression else branch" <|
             \() ->
@@ -189,58 +200,67 @@ b = Debug.log z
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed "a = if True then True else b"
                         ]
         , test "should report Debug.log in a case value" <|
             \() ->
                 testRule """
 a = case Debug.log a b of
-  _ -> []
-            """
+  _ -> []"""
                     |> Review.Test.expectErrors
                         [ Review.Test.error
                             { message = message
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed """
+a = case b of
+  _ -> []"""
                         ]
         , test "should report Debug.log in a case body" <|
             \() ->
                 testRule """
 a = case a of
-  _ -> Debug.log a b
-            """
+  _ -> Debug.log a b"""
                     |> Review.Test.expectErrors
                         [ Review.Test.error
                             { message = message
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed """
+a = case a of
+  _ -> b"""
                         ]
         , test "should report Debug.log in let declaration section" <|
             \() ->
                 testRule """
-a = let b = Debug.log a b
-    in b
-            """
+a = let b = Debug.log a c
+    in b"""
                     |> Review.Test.expectErrors
                         [ Review.Test.error
                             { message = message
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed """
+a = let b = c
+    in b"""
                         ]
         , test "should report Debug.log in let body" <|
             \() ->
                 testRule """
 a = let b = c
-    in Debug.log a b
-            """
+    in Debug.log a b"""
                     |> Review.Test.expectErrors
                         [ Review.Test.error
                             { message = message
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed """
+a = let b = c
+    in b"""
                         ]
         , test "should not report calls from a module containing Debug but that is not Debug" <|
             \() ->
@@ -266,6 +286,10 @@ a = log "" 1
                             , under = "log"
                             }
                             |> Review.Test.atExactly { start = { row = 5, column = 5 }, end = { row = 5, column = 8 } }
+                            |> whenFixed """
+import Debug exposing (log)
+a = 1
+"""
                         ]
         , test "should report the use of `log` when it has been implicitly imported" <|
             \() ->
@@ -279,6 +303,10 @@ a = log "" 1
                             , details = details
                             , under = "log"
                             }
+                            |> whenFixed """
+import Debug exposing (..)
+a = 1
+"""
                         ]
         , test "should not report the use of `log` when it has not been imported" <|
             \() ->
