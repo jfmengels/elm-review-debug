@@ -14,6 +14,14 @@ testRule string =
         |> Review.Test.runWithProjectData project rule
 
 
+errorDetails : { message : String, details : List String, under : String }
+errorDetails =
+    { message = message
+    , details = details
+    , under = "Debug.log"
+    }
+
+
 project : Project
 project =
     Project.addDependency Dependencies.ElmCore.dependency Project.new
@@ -59,21 +67,13 @@ b = Debug.todo ""
             \() ->
                 testRule "a = Debug.log"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                         ]
         , test "should report Debug.log calls" <|
             \() ->
                 testRule "a = Debug.log z"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                         ]
         , test "should report multiple Debug.log calls" <|
             \() ->
@@ -82,159 +82,99 @@ a = Debug.log z
 b = Debug.log z
             """
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> Review.Test.atExactly { start = { row = 4, column = 5 }, end = { row = 4, column = 14 } }
-                        , Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        , Review.Test.error errorDetails
                             |> Review.Test.atExactly { start = { row = 5, column = 5 }, end = { row = 5, column = 14 } }
                         ]
         , test "should report Debug.log in a binary expression" <|
             \() ->
                 testRule "a = ( Debug.log z ) + 2"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                         ]
         , test "should report Debug.log in a << binary expression (on the left)" <|
             \() ->
                 testRule "a = fn << Debug.log b"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed "a = fn"
                         ]
         , test "should report Debug.log in a << binary expression (on the right)" <|
             \() ->
                 testRule "a = Debug.log b << fn"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed "a = fn"
                         ]
         , test "should report Debug.log in a |> pipe expression" <|
             \() ->
                 testRule "a = fn |> Debug.log z"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed "a = fn"
                         ]
         , test "should report Debug.log in a <| pipe expression" <|
             \() ->
                 testRule "a = Debug.log z <| fn"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed "a = fn"
                         ]
         , test "should report Debug.log in a large <| pipe expression" <|
             \() ->
                 testRule "a = foo <| Debug.log z <| fn"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed "a = foo <| fn"
                         ]
         , test "should report Debug.log in an list expression" <|
             \() ->
                 testRule "a = [ Debug.log z y ]"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed "a = [ y ]"
                         ]
         , test "should report Debug.log in a record expression" <|
             \() ->
                 testRule "a = { foo = Debug.log z y }"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed "a = { foo = y }"
                         ]
         , test "should report Debug.log in a record update expression" <|
             \() ->
                 testRule "a = { model | foo = Debug.log z y }"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed "a = { model | foo = y }"
                         ]
         , test "should report Debug.log in an lambda expression" <|
             \() ->
                 testRule "a = (\\foo -> Debug.log z foo)"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed "a = (\\foo -> foo)"
                         ]
         , test "should report Debug.log in an if expression condition" <|
             \() ->
                 testRule "a = if Debug.log a b then True else False"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed "a = if b then True else False"
                         ]
         , test "should report Debug.log in an if expression then branch" <|
             \() ->
                 testRule "a = if True then Debug.log a b else False"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed "a = if True then b else False"
                         ]
         , test "should report Debug.log in an if expression else branch" <|
             \() ->
                 testRule "a = if True then True else Debug.log a b"
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed "a = if True then True else b"
                         ]
         , test "should report Debug.log in a case value" <|
@@ -243,11 +183,7 @@ b = Debug.log z
 a = case Debug.log a b of
   _ -> []"""
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed """
 a = case b of
   _ -> []"""
@@ -258,11 +194,7 @@ a = case b of
 a = case a of
   _ -> Debug.log a b"""
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed """
 a = case a of
   _ -> b"""
@@ -273,11 +205,7 @@ a = case a of
 a = let b = Debug.log a c
     in b"""
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed """
 a = let b = c
     in b"""
@@ -288,11 +216,7 @@ a = let b = c
 a = let b = c
     in Debug.log a b"""
                     |> Review.Test.expectErrors
-                        [ Review.Test.error
-                            { message = message
-                            , details = details
-                            , under = "Debug.log"
-                            }
+                        [ Review.Test.error errorDetails
                             |> whenFixed """
 a = let b = c
     in b"""
