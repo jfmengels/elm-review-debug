@@ -137,6 +137,17 @@ b = Debug.log z
                             }
                             |> whenFixed "a = fn"
                         ]
+        , test "should report Debug.log in a large <| pipe expression" <|
+            \() ->
+                testRule "a = foo <| Debug.log z <| fn"
+                    |> Review.Test.expectErrors
+                        [ Review.Test.error
+                            { message = message
+                            , details = details
+                            , under = "Debug.log"
+                            }
+                            |> whenFixed "a = foo <| fn"
+                        ]
         , test "should report Debug.log in an list expression" <|
             \() ->
                 testRule "a = [ Debug.log z y ]"
