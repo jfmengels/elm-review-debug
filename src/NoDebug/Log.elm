@@ -150,6 +150,26 @@ expressionVisitor node context =
                 context
                 left
 
+        Expression.OperatorApplication "<<" _ left right ->
+            let
+                ( errorsLeft, contextAfterLeft ) =
+                    handleWhenSingleArg
+                        { start = (Node.range left).start
+                        , end = (Node.range right).start
+                        }
+                        context
+                        left
+
+                ( errorsRight, contextAfterRight ) =
+                    handleWhenSingleArg
+                        { start = (Node.range left).end
+                        , end = (Node.range right).end
+                        }
+                        contextAfterLeft
+                        right
+            in
+            ( errorsLeft ++ errorsRight, contextAfterRight )
+
         Expression.Application (((Node logFunctionRange (Expression.FunctionOrValue _ "log")) as logFunctionNode) :: logArguments) ->
             let
                 rangeToRemove : Maybe Range
