@@ -93,16 +93,30 @@ b = Debug.log z
                     |> Review.Test.expectErrors
                         [ Review.Test.error errorDetails
                         ]
-        , test "should report Debug.log in a << binary expression (on the left)" <|
+        , test "should report Debug.log in a << binary expression (on the right)" <|
             \() ->
                 testRule "a = fn << Debug.log b"
                     |> Review.Test.expectErrors
                         [ Review.Test.error errorDetails
                             |> whenFixed "a = fn"
                         ]
-        , test "should report Debug.log in a << binary expression (on the right)" <|
+        , test "should report Debug.log in a << binary expression (on the left)" <|
             \() ->
                 testRule "a = Debug.log b << fn"
+                    |> Review.Test.expectErrors
+                        [ Review.Test.error errorDetails
+                            |> whenFixed "a = fn"
+                        ]
+        , test "should report Debug.log in a >> binary expression (on the right)" <|
+            \() ->
+                testRule "a = fn >> Debug.log b"
+                    |> Review.Test.expectErrors
+                        [ Review.Test.error errorDetails
+                            |> whenFixed "a = fn"
+                        ]
+        , test "should report Debug.log in a >> binary expression (on the left)" <|
+            \() ->
+                testRule "a = Debug.log b >> fn"
                     |> Review.Test.expectErrors
                         [ Review.Test.error errorDetails
                             |> whenFixed "a = fn"
