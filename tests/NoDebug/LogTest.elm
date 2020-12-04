@@ -115,9 +115,20 @@ b = Debug.log z
                             , under = "Debug.log"
                             }
                         ]
-        , test "should report Debug.log in a pipe expression" <|
+        , test "should report Debug.log in a |> pipe expression" <|
             \() ->
                 testRule "a = fn |> Debug.log z"
+                    |> Review.Test.expectErrors
+                        [ Review.Test.error
+                            { message = message
+                            , details = details
+                            , under = "Debug.log"
+                            }
+                            |> whenFixed "a = fn"
+                        ]
+        , test "should report Debug.log in a <| pipe expression" <|
+            \() ->
+                testRule "a = Debug.log z <| fn"
                     |> Review.Test.expectErrors
                         [ Review.Test.error
                             { message = message
