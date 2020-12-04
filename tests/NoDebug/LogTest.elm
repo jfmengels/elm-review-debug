@@ -105,15 +105,27 @@ b = Debug.log z
                             , under = "Debug.log"
                             }
                         ]
-        , test "should report Debug.log in a << binary expression" <|
+        , test "should report Debug.log in a << binary expression (on the left)" <|
             \() ->
-                testRule "a = fn << Debug.log"
+                testRule "a = fn << Debug.log b"
                     |> Review.Test.expectErrors
                         [ Review.Test.error
                             { message = message
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed "a = fn"
+                        ]
+        , test "should report Debug.log in a << binary expression (on the right)" <|
+            \() ->
+                testRule "a = Debug.log b << fn"
+                    |> Review.Test.expectErrors
+                        [ Review.Test.error
+                            { message = message
+                            , details = details
+                            , under = "Debug.log"
+                            }
+                            |> whenFixed "a = fn"
                         ]
         , test "should report Debug.log in a |> pipe expression" <|
             \() ->
