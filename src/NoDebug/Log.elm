@@ -65,7 +65,7 @@ rule : Rule
 rule =
     Rule.newModuleRuleSchema "NoDebug.Log" { hasLogBeenImported = False }
         |> Rule.withImportVisitor importVisitor
-        |> Rule.withExpressionVisitor expressionVisitor
+        |> Rule.withExpressionEnterVisitor expressionVisitor
         |> Rule.fromModuleRuleSchema
 
 
@@ -120,13 +120,13 @@ isLog node =
             False
 
 
-expressionVisitor : Node Expression -> Rule.Direction -> Context -> ( List (Error {}), Context )
-expressionVisitor node direction context =
-    case ( direction, Node.value node ) of
-        ( Rule.OnEnter, Expression.FunctionOrValue [ "Debug" ] "log" ) ->
+expressionVisitor : Node Expression -> Context -> ( List (Error {}), Context )
+expressionVisitor node context =
+    case Node.value node of
+        Expression.FunctionOrValue [ "Debug" ] "log" ->
             ( [ error node ], context )
 
-        ( Rule.OnEnter, Expression.FunctionOrValue [] "log" ) ->
+        Expression.FunctionOrValue [] "log" ->
             if context.hasLogBeenImported then
                 ( [ error node ], context )
 
