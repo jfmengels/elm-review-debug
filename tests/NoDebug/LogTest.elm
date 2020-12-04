@@ -124,6 +124,7 @@ b = Debug.log z
                             , details = details
                             , under = "Debug.log"
                             }
+                            |> whenFixed "a = fn"
                         ]
         , test "should report Debug.log in an list expression" <|
             \() ->
