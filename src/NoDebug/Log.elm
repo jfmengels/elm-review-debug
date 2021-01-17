@@ -131,16 +131,36 @@ handleWhenSingleArg rangeToPotentiallyRemove context node =
             ( [], context )
 
 
+collectPipeline : Node Expression -> List (Node Expression)
+collectPipeline node =
+    case Node.value node of
+        Expression.OperatorApplication "|>" _ left right ->
+            left :: collectPipeline right
+
+        _ ->
+            [ node ]
+
+
 expressionVisitor : Node Expression -> Context -> ( List (Error {}), Context )
 expressionVisitor node context =
     case Node.value node of
         Expression.OperatorApplication "|>" _ left right ->
-            handleWhenSingleArg
-                { start = (Node.range left).end
-                , end = (Node.range right).end
-                }
-                context
-                right
+            List.foldl
+                (\subNode ( errors, prev, ctx ) ->
+                    let
+                        ( newErrors, newContext ) =
+                            handleWhenSingleArg
+                                { start = (Node.range prev).end
+                                , end = (Node.range subNode).end
+                                }
+                                ctx
+                                subNode
+                    in
+                    ( newErrors ++ errors, subNode, newContext )
+                )
+                ( [], left, context )
+                (collectPipeline right)
+                |> (\( errors, _, newContext ) -> ( errors, newContext ))
 
         Expression.OperatorApplication "<|" _ left right ->
             handleWhenSingleArg
