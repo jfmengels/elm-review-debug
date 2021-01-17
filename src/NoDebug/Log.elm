@@ -133,7 +133,7 @@ handleWhenSingleArg rangeToPotentiallyRemove context node =
 
 expressionVisitor : Node Expression -> Context -> ( List (Error {}), Context )
 expressionVisitor node context =
-    case Node.value node of
+    case Debug.log "\nnode" <| Node.value node of
         Expression.OperatorApplication "|>" _ left right ->
             handleWhenSingleArg
                 { start = (Node.range left).end
@@ -194,15 +194,16 @@ expressionVisitor node context =
             let
                 rangeToRemove : Maybe Range
                 rangeToRemove =
-                    case logArguments of
-                        [ _, valueToLog ] ->
-                            Just
-                                { start = logFunctionRange.start
-                                , end = (Node.range valueToLog).start
-                                }
+                    Debug.log "foo" <|
+                        case logArguments of
+                            [ _, valueToLog ] ->
+                                Just
+                                    { start = logFunctionRange.start
+                                    , end = (Node.range valueToLog).start
+                                    }
 
-                        _ ->
-                            Nothing
+                            _ ->
+                                Nothing
             in
             reportIfDebugLog logFunctionNode context rangeToRemove
 

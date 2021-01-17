@@ -128,6 +128,13 @@ b = Debug.log z
                         [ Review.Test.error errorDetails
                             |> whenFixed "a = fn"
                         ]
+        , test "should report Debug.log in a large |> pipe expression (pipes on each side)" <|
+            \() ->
+                testRule "a = fn |> Debug.log z |> fn2"
+                    |> Review.Test.expectErrors
+                        [ Review.Test.error errorDetails
+                            |> whenFixed "a = fn |> fn2"
+                        ]
         , test "should report Debug.log in a <| pipe expression" <|
             \() ->
                 testRule "a = Debug.log z <| fn"
