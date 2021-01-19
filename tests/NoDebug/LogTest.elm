@@ -135,6 +135,17 @@ b = Debug.log z
                         [ Review.Test.error errorDetails
                             |> whenFixed "a = fn |> fn2"
                         ]
+        , test "should report Debug.log multiple times in a pipeline expression with multiple Debug.log calls" <|
+            \() ->
+                testRule "a = fn |> Debug.log z |> fn2 |> Debug.log y"
+                    |> Review.Test.expectErrors
+                        [ Review.Test.error errorDetails
+                            |> Review.Test.atExactly { start = { row = 3, column = 11 }, end = { row = 3, column = 20 } }
+                            |> whenFixed "a = fn |> fn2 |> Debug.log y"
+                        , Review.Test.error errorDetails
+                            |> Review.Test.atExactly { start = { row = 3, column = 33 }, end = { row = 3, column = 42 } }
+                            |> whenFixed "a = fn |> Debug.log z |> fn2"
+                        ]
         , test "should report Debug.log in a <| pipe expression" <|
             \() ->
                 testRule "a = Debug.log z <| fn"
