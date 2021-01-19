@@ -3,7 +3,7 @@
     "name": "jfmengels/elm-review-debug",
     "summary": "Provides elm-review rules to detect debug code",
     "license": "BSD-3-Clause",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "exposed-modules": [
         "NoDebug.Log",
         "NoDebug.TodoOrToString"
