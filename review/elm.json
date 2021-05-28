@@ -13,9 +13,10 @@
             "jfmengels/elm-review": "2.4.2",
             "jfmengels/elm-review-common": "1.0.3",
             "jfmengels/elm-review-documentation": "1.0.1",
+            "jfmengels/elm-review-simplify": "2.0.2",
             "jfmengels/elm-review-unused": "1.1.10",
             "sparksp/elm-review-forbidden-words": "1.0.1",
-            "stil4m/elm-syntax": "7.2.4",
+            "stil4m/elm-syntax": "7.2.5",
             "truqu/elm-review-noleftpizza": "2.0.0"
         },
         "indirect": {
