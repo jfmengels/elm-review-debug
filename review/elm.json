@@ -15,7 +15,7 @@
             "jfmengels/elm-review-cognitive-complexity": "1.0.0",
             "jfmengels/elm-review-common": "1.2.3",
             "jfmengels/elm-review-documentation": "2.0.2",
-            "jfmengels/elm-review-simplify": "2.0.21",
+            "jfmengels/elm-review-simplify": "2.0.22",
             "jfmengels/elm-review-unused": "1.1.25",
             "sparksp/elm-review-forbidden-words": "1.0.1",
             "stil4m/elm-syntax": "7.2.9"
